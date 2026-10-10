@@ -4,7 +4,7 @@ Prototype weather decision tools for **Kentucky fruit** (grapes, peaches) and **
 
 **Live dashboard:** https://manmeet3591.github.io/crop-weather-tools/
 
-Each tool runs a published crop model on observed station weather, then carries it forward with a 16-day forecast and a 60-day ensemble outlook. The outlook is the slot for the WKU AI sub-seasonal-to-seasonal (S2S) forecast.
+Each tool runs a published crop model on observed station weather, then carries it forward with a 16-day forecast and a 45-day ECMWF IFS sub-seasonal (S2S) ensemble outlook.
 
 | Tool | Region | Model and thresholds |
 |---|---|---|
@@ -24,9 +24,12 @@ Each tool runs a published crop model on observed station weather, then carries 
   - [Open-Meteo](https://open-meteo.com/) forecast and seasonal ensemble APIs
 - To run the update yourself: `pip install requests && python scripts/update_data.py`, then serve the folder (`python -m http.server`) and open `http://localhost:8000`.
 
-## Plugging in the WKU S2S model
+## Forecast sources
 
-`scripts/update_data.py` writes the outlook as `S0`…`S20` lines (daily mean °F per ensemble member, 60 days) and `SMED` (median daily max/min, plus ET0 for Arizona). Replace the `seasonal()` call with the AI forecast output in the same shape and every tool picks it up.
+- Days 1–15: Open-Meteo forecast API.
+- Beyond day 15, out to day 45: the **ECMWF IFS extended-range (sub-seasonal) ensemble, EC46**, 51 members (control + 50), requested with `models=ecmwf_ec46` from the Open-Meteo seasonal API. ECMWF runs it daily. Data CC BY 4.0.
+
+To swap in a different S2S source (for example the WKU AI model), replace `seasonal()` in `scripts/update_data.py` with output in the same shape: `S0`…`S50` lines of daily mean °F per member and `SMED` lines of the ensemble median (plus ET0 in inches for Arizona).
 
 ## Status
 
